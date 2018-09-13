@@ -1,0 +1,21 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+requests = "*"
+pandas = "*"
+matplotlib = "*"
+seaborn = "*"
+plotly = "==2.7.0"
+cufflinks = "*"
+ipython = "*"
+pymongo = "*"
+schedule = "*"
+
+[dev-packages]
+pylint = "*"
+
+[requires]
+python_version = "3.7"
