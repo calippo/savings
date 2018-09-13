@@ -1,0 +1,81 @@
+"""
+  Store data
+"""
+
+import requests as r
+from pymongo import MongoClient
+import smtplib
+import os
+import schedule
+import time
+import logging
+
+accounts = [
+    "2547130",
+    "2547133",
+    "2547148",
+]
+
+app_id=os.environ['APP_ID']
+secret=os.environ['SECRET']
+mongo_user=os.environ['MONGO_USER']
+mongo_password=os.environ['MONGO_PASSWORD']
+mongo_uri=os.environ['MONGO_URI']
+mongo_db=os.environ['MONGO_DB']
+schedule_at=os.environ['SCHEDULE_AT']
+
+uri = f"mongodb://{mongo_user}:{mongo_password}@{mongo_uri}/{mongo_db}"
+
+def email(e):
+    SERVER = "localhost"
+    FROM = "finance@personal.io"
+    TO = ["claudio@buildo.io"]
+    SUBJECT = "Error importing stuff!"
+    TEXT = e
+
+    message = """\
+    From: %s
+    To: %s
+    Subject: %s
+
+    %s
+    """ % (FROM, ", ".join(TO), SUBJECT, TEXT)
+
+    # Send the mail
+
+    server = smtplib.SMTP(SERVER)
+    server.sendmail(FROM, TO, message)
+    server.quit()
+
+def jesus():
+    print("start saving")
+    try:
+        mongo = MongoClient(uri)
+        db = mongo["finance"]["finance"]
+        headers = {
+            "Accept": "application/json",
+            "Content-type": "application/json",
+            "App-id": f"{app_id}",
+            "Secret": f"{secret}"
+        }
+        rows = []
+        for account in accounts:
+            logging.info(f"saving account {repr(account)}")
+            result = r.get(
+                f"https://www.saltedge.com/api/v4/transactions?account_id={account}",
+                headers=headers
+            )
+            for i in result.json()['data']:
+                db.replace_one({'id': i['id']}, i, upsert=True)
+        mongo.close()
+    except Exception as e:
+        print(":( sad")
+        email(repr(e))
+
+if __name__ == "__main__":
+    print("start")
+    schedule.every().day.at(schedule_at).do(jesus)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+    
