@@ -48,7 +48,7 @@ def email(e):
     server.quit()
 
 def jesus():
-    print("start saving")
+    logging.info("start scheduled job")
     try:
         mongo = MongoClient(uri)
         db = mongo["finance"]["finance"]
@@ -69,11 +69,11 @@ def jesus():
                 db.replace_one({'id': i['id']}, i, upsert=True)
         mongo.close()
     except Exception as e:
-        print(":( sad")
+        logging.error(f"something went really wrong {repr(e)}")
         email(repr(e))
 
 if __name__ == "__main__":
-    print("start")
+    logging.info("hello world")
     schedule.every().day.at(schedule_at).do(jesus)
     while True:
         schedule.run_pending()
