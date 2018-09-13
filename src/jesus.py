@@ -8,7 +8,7 @@ import smtplib
 import os
 import schedule
 import time
-import logging
+from logs import logger
 
 accounts = [
     "2547130",
@@ -48,7 +48,7 @@ def email(e):
     server.quit()
 
 def jesus():
-    logging.info("start scheduled job")
+    logger.info("start scheduled job")
     try:
         mongo = MongoClient(uri)
         db = mongo["finance"]["finance"]
@@ -58,9 +58,8 @@ def jesus():
             "App-id": f"{app_id}",
             "Secret": f"{secret}"
         }
-        rows = []
         for account in accounts:
-            logging.info(f"saving account {repr(account)}")
+            logger.info(f"saving account {repr(account)}")
             result = r.get(
                 f"https://www.saltedge.com/api/v4/transactions?account_id={account}",
                 headers=headers
@@ -69,11 +68,11 @@ def jesus():
                 db.replace_one({'id': i['id']}, i, upsert=True)
         mongo.close()
     except Exception as e:
-        logging.error(f"something went really wrong {repr(e)}")
+        logger.error(f"something went really wrong {repr(e)}")
         email(repr(e))
 
 if __name__ == "__main__":
-    logging.info("hello world")
+    logger.info("hello world")
     schedule.every().day.at(schedule_at).do(jesus)
     while True:
         schedule.run_pending()
