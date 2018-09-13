@@ -1,0 +1,27 @@
+version: '2'
+
+services:
+  mongodb:
+    image: 'bitnami/mongodb:latest'
+    ports:
+      - "27017:27017"
+    volumes:
+      - "./data:/data/db"
+    environment:
+      - MONGODB_USERNAME=finance
+      - MONGODB_PASSWORD=finance
+      - MONGODB_DATABASE=finance
+
+  jesus:
+    image: 'calippo/jesus:latest'
+    environment:
+      - SCHEDULE_AT=18:08
+      - MONGO_USER=finance
+      - MONGO_PASSWORD=finance
+      - MONGO_URI=ec2-18-195-45-229.eu-central-1.compute.amazonaws.com
+      - MONGO_DB=finance
+      - APP_ID=PfIvqZEvQNFBdsWcDLZvSdh3-8pm13XmTBbruFN4o-0
+      - SECRET=eBdRurxVW__nKad3BIXr-eCW4UrY8-GmqbTB5by92uc
+      - PYTHONUNBUFFERED=1
+    depends_on:
+      - mongodb
